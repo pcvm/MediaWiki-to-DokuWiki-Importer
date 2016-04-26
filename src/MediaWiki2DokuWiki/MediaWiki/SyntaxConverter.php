@@ -128,6 +128,24 @@ class MediaWiki2DokuWiki_MediaWiki_SyntaxConverter
             '/([\[][^\[]*)(<nowiki>)(\/\/+)(<\/nowiki>)([^\]]*)/' => '\1\3\5',
             '/([\[][^\[]*)(<nowiki>)(\/\/+)(<\/nowiki>)([^\]]*)/' => '\1\3\5',
 
+            // -- RE additions / pcvm
+            //
+            // 1. convert any code fragments containing a shell prompt '$' to '>>' so
+            //    as to avoid subsequent errors relating to RE use of '$'
+            '@(\n\s)([$])@'             => '\1>>',
+            //
+            // 2. change various hard-coded indentations for dot points to plain dot points
+            //    (let dokuwiki figure out appropriate indentation level)
+            '@(\n):::([*])@'            => '\1\2\2\2\2',
+            '@(\n)::([*])@'             => '\1\2\2\2',
+            '@(\n):([*])@'              => '\1\2\2',
+            '@(\n)[:]+([^:*])@'         => "\1\2",
+            //
+            // 3. existing mappings did not find and preserve my code fragments so search
+            //    for the largest sequence from "\n " up to but not including a "\n\S"
+            //    (i.e. a newline followed by non-whitespace) and wrap it in a code block
+            '@\n (.+?)(?=\n\S)@s'       => '<code> \1</code>',
+
             '@<pre>(.*?)?</pre>@es'     => '$this->storeCodeBlock(\'\1\')',
             '@</code>\n[ \t]*\n<code>@' => ''
         );
